@@ -24,41 +24,46 @@ import edu.ucsc.genome.TrackHeader;
  * @author timpalpant
  *
  */
-public class SplitWigIntervals extends CommandLineTool {
+public class SplitWigIntervalsToBedGraphPlus extends CommandLineTool {
 
-	private static final Logger log = Logger.getLogger(IntervalStats.class);
+	private static final Logger log = Logger.getLogger(SplitWigIntervalsToBedGraphPlus.class);
 
-	@Parameter(names = {"-i", "--input"}, description = "Input file (Wig)", 
+	@Parameter(names = {"-i", "--input"}, description = "Input fffffile (Wig)", 
              required = true, validateWith = ReadablePathValidator.class)
 	public Path inputFile;
 	@Parameter(names = {"-l", "--loci"}, description = "Loci file (Bed)", 
              required = true, validateWith = ReadablePathValidator.class)
 	public Path lociFile;
 	@Parameter(names = {"-o", "--output"}, description = "Output bedgraph-plus file name")
-	public String outputFile;
+	public Path outputFile;
 	
 	@Override
 	public void run() throws IOException {
 		log.debug("Initializing input file");
 		int count = 0, skipped = 0;
-		try (WigFileReader wig = WigFileReader.autodetect(inputFile);
-         IntervalFileReader<? extends Interval> intervals = IntervalFileReader.autodetect(lociFile)) {
+		try (
+               WigFileReader wig = WigFileReader.autodetect(inputFile);
+               IntervalFileReader<? extends Interval> intervals = IntervalFileReader.autodetect(lociFile) // no ending semicolon in try-with-resources block
+            )
+        {
 			log.debug("Iterating over all intervals and writing Wig for each");
-      TrackHeader header = TrackHeader.newWiggle();
+            //TrackHeader header = TrackHeader.newWiggle();
 			for (Interval interval : intervals) {
-					try {
-            Contig query = wig.query(interval);
-            header.setName(interval.getId());
-            Path outputFile = Paths.get(String.format(outputFilePattern, interval.getId()));
-            try (WigFileWriter writer = new WigFileWriter(outputFile, header)) {
-              writer.write(query);
+                System.out.printf("encountered interval: %s\n", interval);
+                try {
+                    Contig query = wig.query(interval);
+                    /*header.setName(interval.getId());
+                    try (WigFileWriter writer = new WigFileWriter(outputFile, header)) {
+                      writer.write(query);
+                    }*/
+                    float[] values = query.getValues();
+                    System.out.printf("interval %1$s has %2$d datapoints%n", interval, values.length);
+                } catch (WigFileException e) {
+                    log.info("Skipping interval "+interval+" which has no data");
+                    skipped++;
+                }
+            count++;
             }
-					} catch (WigFileException e) {
-            log.info("Skipping interval "+interval+" which has no data");
-						skipped++;
-					}
-          count++;
-		  }
 		}
 		
 		log.info(count + " intervals processed");
@@ -66,7 +71,7 @@ public class SplitWigIntervals extends CommandLineTool {
 	}
 	
 	public static void main(String[] args) {
-		new SplitWigIntervals().instanceMain(args);
+		new SplitWigIntervalsToBedGraphPlus().instanceMain(args);
 	}
 
 }
