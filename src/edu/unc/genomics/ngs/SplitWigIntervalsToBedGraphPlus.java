@@ -58,6 +58,14 @@ public class SplitWigIntervalsToBedGraphPlus extends CommandLineTool {
                     }*/
                     float[] values = query.getValues();
                     System.out.printf("interval %1$s has %2$d datapoints%n", interval, values.length);
+                    final String chr = interval.getChr();
+                    final String id = interval.getId();
+                    for (int startPos = interval.low(); startPos < interval.high(); startPos++) {
+                        int i = startPos - interval.low();
+                        System.out.printf("%1$s\t%2$d\t%3$d\t%4$f\t%5$s\n", chr, startPos, startPos+1, values[i], id); 
+                        
+                    }
+            
                 } catch (WigFileException e) {
                     log.info("Skipping interval "+interval+" which has no data");
                     skipped++;

@@ -9,7 +9,7 @@ then
 fi
 
 # Get the root directory in case this script is being called from elsewhere
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR="$( cd "$( dirname $(readlink "${BASH_SOURCE[0]}" ))" && pwd )"
 
 # List the available tools (this is a little hacky)
 if [ "$1" = "list" ]
