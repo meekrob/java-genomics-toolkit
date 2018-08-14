@@ -20,9 +20,9 @@ import edu.unc.genomics.io.WigFileException;
 import edu.ucsc.genome.TrackHeader;
 
 /**
- * For each interval in Loci file (Bed), output overlapping from Input file (Wig) to a BedGraph that includes the interval name/id.
+ * For each interval in Loci file (Bed), output min, mean, max, N of data overlapping from Input file (Wig) to a BedGraph that includes the interval name/id.
  * @author davidcking
- *
+ * modified from timothypalpant
  */
 public class SplitWigIntervalsToBedGraphPlus extends CommandLineTool {
 
@@ -57,14 +57,24 @@ public class SplitWigIntervalsToBedGraphPlus extends CommandLineTool {
                       writer.write(query);
                     }*/
                     float[] values = query.getValues();
-                    System.out.printf("interval %1$s has %2$d datapoints%n", interval, values.length);
+                    //System.out.printf("interval %1$s has %2$d datapoints%n", interval, values.length);
                     final String chr = interval.getChr();
                     final String id = interval.getId();
+                    float i_max = Float.MIN_VALUE;
+                    float i_min = Float.MAX_VALUE;
+                    float i_sum = 0;
+                    float i_N = 0;
                     for (int startPos = interval.low(); startPos < interval.high(); startPos++) {
                         int i = startPos - interval.low();
-                        System.out.printf("%1$s\t%2$d\t%3$d\t%4$f\t%5$s\n", chr, startPos, startPos+1, values[i], id); 
-                        
+                        i_max = Math.max(i_max, values[i]);
+                        i_min = Math.min(i_min, values[i]);
+                        i_sum += values[i];
+                        i_N++;
                     }
+                    float i_mean = i_sum / i_N;
+                    int startPos = interval.low();
+                    System.out.printf("%1$s\t%2$d\t%3$d\t%4$f\t%5$f\t%6$f\t%7$s\n", chr, startPos, startPos+1, i_min, i_mean, i_max, i_N, id); 
+                    
             
                 } catch (WigFileException e) {
                     log.info("Skipping interval "+interval+" which has no data");
