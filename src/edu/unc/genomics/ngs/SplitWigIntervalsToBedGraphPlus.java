@@ -21,14 +21,14 @@ import edu.ucsc.genome.TrackHeader;
 
 /**
  * For each interval in Loci file (Bed), output overlapping from Input file (Wig) to a BedGraph that includes the interval name/id.
- * @author timpalpant
+ * @author davidcking
  *
  */
 public class SplitWigIntervalsToBedGraphPlus extends CommandLineTool {
 
 	private static final Logger log = Logger.getLogger(SplitWigIntervalsToBedGraphPlus.class);
 
-	@Parameter(names = {"-i", "--input"}, description = "Input fffffile (Wig)", 
+	@Parameter(names = {"-i", "--input"}, description = "Input file (Wig)", 
              required = true, validateWith = ReadablePathValidator.class)
 	public Path inputFile;
 	@Parameter(names = {"-l", "--loci"}, description = "Loci file (Bed)", 
