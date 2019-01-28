@@ -63,6 +63,7 @@ public class CustomEquation_1 extends WigMathTool {
 
   @Override
   public float[] compute(Interval chunk) throws IOException, WigFileException {
+    float observed_min = 0;
     log.setLevel((Level)Level.INFO); // defaults to DEBUG
     float[] minuend = minuendReader.query(chunk).getValues();
     float[] subtrahend = subtrahendReader.query(chunk).getValues();
@@ -84,10 +85,17 @@ public class CustomEquation_1 extends WigMathTool {
         minuend[i] = absolute_min;
       }
       else { 
-        minuend[i] -= subtrahend[i];
+        minuend[i] = (float)Math.log(minuend[i] - subtrahend[i]);
+        if (minuend[i] < observed_min) {
+          observed_min = minuend[i];
+        }
+      }
+
+      if (minuend[i] < absolute_min) {
+        log.warn("Encountered a value less than absolute minimum (" + absolute_min + "): " + minuend[i]);
       }
     }
-
+    log.info("Compute chunk: observed min was: " + observed_min);
     return minuend;
   }
 
