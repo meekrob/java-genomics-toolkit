@@ -41,6 +41,8 @@ public class SplitWigIntervalsToDataFrame extends CommandLineTool {
 	public Path lociFile;
 	@Parameter(names = {"-o", "--output"}, description = "Output R-style dataframe filename")
 	public Path outputFile;
+    @Parameter(names = { "-s", "--skip-missing" }, description = "Skip missing data during aggregation")
+    public boolean skipMissing = false;
 
     // as per WigMathTool (extends WigAnalysisTool)
     private void prepare() throws CommandLineToolException {
@@ -113,6 +115,7 @@ public class SplitWigIntervalsToDataFrame extends CommandLineTool {
                         int i_N = 0;
                         for (int startPos = interval.low(); startPos < interval.high(); startPos++) {
                             int i = startPos - interval.low();
+                            if (Float.isNaN(values[i]) && skipMissing) continue;
                             i_max = Math.max(i_max, values[i]);
                             i_min = Math.min(i_min, values[i]);
                             i_sum += values[i];
